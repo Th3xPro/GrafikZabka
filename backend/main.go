@@ -60,7 +60,15 @@ func handleGoogleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url := googleOauthConfig.AuthCodeURL(oauthStateString)
+	// Generate a new state for each login attempt
+	newState := generateRandomString(32)
+	oauthStateString = newState
+
+	url := googleOauthConfig.AuthCodeURL(oauthStateString,
+		oauth2.AccessTypeOffline,                                 // Request refresh token
+		oauth2.SetAuthURLParam("prompt", "select_account"),       // Force consent and account selection
+		oauth2.SetAuthURLParam("include_granted_scopes", "true"), // Include previously granted scopes
+	)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
