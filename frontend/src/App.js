@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import SpreadsheetView from './components/SpreadsheetView';
-import './App.css';
+import EmployerDashboard from './components/EmployerDashboard';
+import EmployeeDashboard from './components/EmployeeDashboard';
 
 axios.defaults.withCredentials = true;
 
@@ -10,20 +10,11 @@ const API_BASE_URL = 'http://localhost:8080';
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [spreadsheetData, setSpreadsheetData] = useState(null);
-  const [loadingSpreadsheet, setLoadingSpreadsheet] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     checkAuthStatus();
   }, []);
-
-  // Auto-fetch spreadsheet when user is authenticated
-  useEffect(() => {
-    if (user && !spreadsheetData) {
-      fetchSpreadsheet();
-    }
-  }, [user]);
 
   const checkAuthStatus = async () => {
     try {
@@ -46,7 +37,6 @@ function App() {
     try {
       await axios.post(`${API_BASE_URL}/logout`);
       setUser(null);
-      setSpreadsheetData(null);
       setError(null);
     } catch (error) {
       console.error('Logout failed:', error);
@@ -54,116 +44,112 @@ function App() {
     }
   };
 
-  const fetchSpreadsheet = async () => {
-    setLoadingSpreadsheet(true);
-    setError(null);
-    
-    try {
-      const response = await axios.post(`${API_BASE_URL}/api/spreadsheet`);
-      setSpreadsheetData(response.data);
-    } catch (error) {
-      console.error('Failed to fetch spreadsheet:', error);
-      if (error.response?.status === 401) {
-        setError('Session expired. Please login again.');
-        setUser(null);
-      } else {
-        setError('Failed to fetch your spreadsheet. Please try again.');
-      }
-    } finally {
-      setLoadingSpreadsheet(false);
-    }
-  };
-
-  const updateSpreadsheetData = (newData) => {
-    setSpreadsheetData(prev => ({
-      ...prev,
-      data: newData
-    }));
-  };
-
   if (loading) {
     return (
-      <div className="App">
-        <div className="loading-spinner">
-          <div className="spinner"></div>
-          <p>Loading...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+          <p className="text-white text-lg font-medium">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="App">
-      <header className="App-header">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
+      <div className="min-h-screen flex flex-col items-center justify-start p-5 text-black">
         {user ? (
-          <div className="user-dashboard">
-            <div className="user-info">
-              <img 
-                src={user.picture} 
-                alt="Profile" 
-                className="profile-picture"
-              />
-              <div className="user-details">
-                <h1>Welcome, {user.name}!</h1>
-                <p className="user-email">{user.email}</p>
+          <div className="w-full max-w-6xl">
+            {/* User Info Header */}
+            <div className="flex items-center justify-between bg-white/10 backdrop-blur-lg rounded-2xl p-6 mb-8">
+              <div className="flex items-center space-x-5">
+                <img 
+                  src={user.picture} 
+                  alt="Profile" 
+                  className="w-16 h-16 rounded-full border-4 border-white/30"
+                />
+                <div>
+                  <h1 className="text-2xl font-bold text-white mb-1">
+                    Welcome, {user.name}!
+                  </h1>
+                  <p className="text-white/80 mb-2">{user.email}</p>
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                    user.role === 'employer' 
+                      ? 'bg-green-500 text-white' 
+                      : 'bg-blue-500 text-white'
+                  }`}>
+                    {user.role === 'employer' ? '👔 Employer' : '👤 Employee'}
+                  </span>
+                </div>
               </div>
-            </div>
-
-            <div className="action-buttons">
+              
               <button 
-                className="btn btn-primary"
-                onClick={fetchSpreadsheet} 
-                disabled={loadingSpreadsheet}
-              >
-                {loadingSpreadsheet ? 'Loading...' : 'Refresh Spreadsheet'}
-              </button>
-              <button 
-                className="btn btn-secondary"
+                className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
                 onClick={handleLogout}
               >
                 Logout
               </button>
             </div>
 
+            {/* Error Message */}
             {error && (
-              <div className="error-message">
-                <span className="error-icon">⚠️</span>
-                {error}
+              <div className="bg-red-500/90 text-white p-4 rounded-xl mb-6 flex items-center space-x-3">
+                <span className="text-xl">⚠️</span>
+                <span>{error}</span>
               </div>
             )}
 
-            {loadingSpreadsheet && (
-              <div className="loading-message">
-                <div className="spinner"></div>
-                <p>Loading your GrafikZabka spreadsheet...</p>
+            {/* Dashboard Content */}
+            {user.role === 'employer' ? (
+              <EmployerDashboard user={user} />
+            ) : user.role === 'employee' ? (
+              <EmployeeDashboard user={user} />
+            ) : (
+              <div className="text-center py-16 bg-white/10 backdrop-blur-lg rounded-2xl">
+                <h2 className="text-3xl font-bold text-white mb-4">Unauthorized Access</h2>
+                <p className="text-white/80 text-lg">You are not registered as an employer or employee.</p>
               </div>
-            )}
-
-            {spreadsheetData && !loadingSpreadsheet && (
-              <SpreadsheetView 
-                spreadsheetData={spreadsheetData}
-                onDataUpdate={updateSpreadsheetData}
-                onRefresh={fetchSpreadsheet}
-              />
             )}
           </div>
         ) : (
-          <div className="login-screen">
-            <div className="login-content">
-              <h1>GrafikZabka Schedule Manager</h1>
-              <p>Manage your work schedule with Google Sheets integration</p>
-              <button className="btn btn-login" onClick={handleLogin}>
+          /* Login Screen */
+          <div className="flex items-center justify-center min-h-[80vh]">
+            <div className="max-w-md bg-white/10 backdrop-blur-lg rounded-3xl p-10 text-center">
+              <h1 className="text-4xl font-bold text-white mb-4">
+                GrafikZabka Schedule Manager
+              </h1>
+              <p className="text-white/90 mb-8 text-lg">
+                Manage work schedules with role-based access
+              </p>
+              
+              {/* Role Info Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                  <h3 className="text-xl font-semibold text-white mb-2">👔 Employers</h3>
+                  <p className="text-white/80 text-sm">Create and manage schedules, add employees</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                  <h3 className="text-xl font-semibold text-white mb-2">👤 Employees</h3>
+                  <p className="text-white/80 text-sm">View assigned schedules (read-only access)</p>
+                </div>
+              </div>
+
+              {/* Login Button */}
+              <button 
+                className="inline-flex items-center space-x-3 bg-white text-gray-800 px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                onClick={handleLogin}
+              >
                 <img 
                   src="https://developers.google.com/identity/images/g-logo.png" 
                   alt="Google" 
-                  className="google-icon"
+                  className="w-6 h-6"
                 />
-                Login with Google
+                <span>Login with Google</span>
               </button>
             </div>
           </div>
         )}
-      </header>
+      </div>
     </div>
   );
 }

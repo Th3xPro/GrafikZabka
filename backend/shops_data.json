@@ -1,0 +1,32 @@
+{
+  "maciek.moczadlo@gmail.com": {
+    "GvAg5wE_8KhDm9dk": {
+      "id": "GvAg5wE_8KhDm9dk",
+      "name": "Zwyciestwa",
+      "employees": {},
+      "spreadsheets": {
+        "2025": "14e2XlmkIpQ0bvo4EZlqjA88dmb8G1wfqkhdLYwStuP4",
+        "2026": "13REqmiK_N_h8d_Q2qBkONUuzFW5Ykw29wdER1znB-yY"
+      },
+      "created_at": "2025-07-15T12:31:04.5921334+02:00",
+      "updated_at": "2025-07-16T15:41:29.6105656+02:00"
+    },
+    "ejqXK3_vmVCp7HXk": {
+      "id": "ejqXK3_vmVCp7HXk",
+      "name": "Zalasewo",
+      "employees": {
+        "stanczok@gmail.com": {
+          "email": "stanczok@gmail.com",
+          "name": "Sandra",
+          "hourly_rate": 30.5
+        }
+      },
+      "spreadsheets": {
+        "2025": "16b9z0AW0XFCKr3x8BnpcsBsfd5YswIqFkdlZ9aELU2Y",
+        "2026": "1Hc-IBHbIoT5fntoVgq0GgkHypHEF1oksowTythPbAVo"
+      },
+      "created_at": "2025-07-15T12:27:37.4030047+02:00",
+      "updated_at": "2025-07-15T12:29:06.9226866+02:00"
+    }
+  }
+}
